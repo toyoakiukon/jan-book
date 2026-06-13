@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JAN BOOK 2026年6月｜店頭スキャン用</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<style>
+  :root{
+    --bg:#171a21; --panel:#1f232c; --line:#2c313c; --ink:#eef1f6; --mute:#9aa3b2;
+    --ym:#e60012; --sb:#5b6573; --sbInk:#0a2540; --kaden:#1f9e8c;
+    --paper:#ffffff; --warn:#ffb02e;
+    --kindDisc:#e60012; --kindPoint:#2f8fe0; --kindCount:#7a8290;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:90px;
+  }
+  .tnum{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1}
+
+  header{
+    position:sticky; top:0; z-index:30; background:rgba(23,26,33,.96);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+  }
+  .head-row{display:flex; align-items:baseline; gap:10px; padding:12px 16px 6px}
+  .logo{font-weight:800; letter-spacing:.06em; font-size:18px}
+  .logo small{font-weight:600; color:var(--mute); letter-spacing:.12em; font-size:11px; margin-left:6px}
+  .period{margin-left:auto; font-size:12px; color:var(--mute)}
+  .search-wrap{padding:0 16px 10px}
+  .search{
+    width:100%; height:46px; border-radius:12px; border:1px solid var(--line);
+    background:var(--panel); color:var(--ink); font-size:16px; padding:0 14px;
+  }
+  .search::placeholder{color:#6b7382}
+  .chips{display:flex; gap:8px; overflow-x:auto; padding:0 16px 12px; -webkit-overflow-scrolling:touch}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto; padding:8px 13px; border-radius:999px; border:1px solid var(--line);
+    background:transparent; color:var(--mute); font-size:13px; font-weight:600; white-space:nowrap; cursor:pointer;
+  }
+  .chip.on{background:var(--ink); color:#11141a; border-color:var(--ink)}
+
+  .notice{margin:10px 16px 0; padding:10px 12px; border-radius:10px;
+    background:rgba(255,176,46,.10); border:1px solid rgba(255,176,46,.35);
+    font-size:12px; line-height:1.6; color:#f4d79a}
+  .notice b{color:var(--warn)}
+
+  .ref{margin:10px 16px 0; border:1px solid var(--line); border-radius:10px; background:var(--panel); overflow:hidden}
+  .ref summary{padding:12px 14px; font-size:13.5px; font-weight:700; color:var(--ink); cursor:pointer; list-style:none}
+  .ref summary::-webkit-details-marker{display:none}
+  .ref summary::after{content:"▼"; float:right; color:var(--mute); font-size:11px}
+  .ref[open] summary::after{content:"▲"}
+  .ref-body{padding:2px 14px 14px}
+  .ref-cat{font-size:12px; font-weight:800; color:#6fb6ee; margin:12px 0 4px; letter-spacing:.03em}
+  .ref-item{display:flex; align-items:baseline; gap:8px; font-size:12.5px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,.05)}
+  .ref-ok{color:#5fd8c6; font-weight:800; width:16px; flex:0 0 auto; text-align:center}
+  .ref-ng{color:#6b7382; font-weight:800; width:16px; flex:0 0 auto; text-align:center}
+  .ref-name{flex:1; line-height:1.4}
+  .ref-item.no .ref-name{color:var(--mute)}
+  .ref-note{color:var(--warn); font-size:11px; margin-left:4px}
+
+  .group-title{padding:18px 16px 4px; font-size:13px; font-weight:800; color:var(--mute); letter-spacing:.04em}
+  .group-title.hide,.grid.hide{display:none}
+
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:6px 16px 0}
+  @media(min-width:720px){ .grid{grid-template-columns:repeat(3,1fr)} }
+  @media(min-width:1040px){ .grid{grid-template-columns:repeat(4,1fr)} }
+
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; cursor:pointer; transition:transform .08s ease;
+  }
+  .card:active{transform:scale(.985)}
+  .card .bar{position:absolute; left:0; top:0; bottom:0; width:5px}
+  .card.ym .bar{background:var(--ym)}
+  .card.sb .bar{background:var(--sb)}
+  .card.kaden .bar{background:var(--kaden)}
+  .card-head{display:flex; align-items:center; gap:8px; padding:11px 12px 6px 16px}
+  .brandtag{font-size:10px; font-weight:800; letter-spacing:.08em; padding:2px 6px; border-radius:5px}
+  .card.ym .brandtag{background:rgba(230,0,18,.16); color:#ff6b76}
+  .card.sb .brandtag{background:rgba(120,140,170,.18); color:#aebacb}
+  .card.kaden .brandtag{background:rgba(31,158,140,.16); color:#5fd8c6}
+  .kindtag{font-size:10px; font-weight:700; color:var(--mute); margin-left:auto; padding:2px 6px; border:1px solid var(--line); border-radius:5px; white-space:nowrap}
+  .name{padding:0 12px 0 16px; font-size:12.5px; font-weight:600; line-height:1.35; color:var(--ink); min-height:34px}
+  .sub{padding:2px 12px 0 16px; font-size:11px; color:var(--mute); line-height:1.4}
+  .value{padding:6px 12px 2px 16px; font-weight:800; letter-spacing:-.01em}
+  .value .num{font-size:22px}
+  .value .unit{font-size:12px; color:var(--mute); margin-left:2px}
+  .value.disc .num{color:#ff7b84}
+  .value.point .num{color:#6fb6ee}
+  .value.count{font-size:12px; color:var(--mute); font-weight:700; padding-top:8px}
+  .barcode{background:var(--paper); margin:10px 10px 12px; border-radius:8px; padding:8px 6px 4px; text-align:center}
+  .barcode svg{width:100%; height:54px; display:block}
+  .code{font-size:11px; color:#1a1d23; letter-spacing:.04em; padding-bottom:4px; font-weight:600}
+  .warnflag{font-size:10.5px; color:var(--warn); padding:0 12px 10px 16px; line-height:1.4}
+
+  .empty{padding:60px 24px; text-align:center; color:var(--mute)}
+
+  /* 選択・数量UI（カード下部） */
+  .card.selected{outline:2px solid #2f8fe0; outline-offset:-2px}
+  .selrow{padding:0 10px 12px}
+  .selbtn{width:100%; height:38px; border:1px solid #2f8fe0; background:transparent; color:#6fb6ee;
+    border-radius:10px; font-size:13px; font-weight:700; cursor:pointer}
+  .stepper{display:flex; align-items:center; justify-content:space-between; height:38px;
+    background:#2f8fe0; border-radius:10px; overflow:hidden}
+  .stepper button{width:50px; height:38px; border:0; background:transparent; color:#fff;
+    font-size:22px; font-weight:700; cursor:pointer; line-height:1}
+  .stepper .qn{color:#fff; font-weight:800; font-size:14px; flex:1; text-align:center}
+
+  .tray{position:fixed; left:0; right:0; bottom:0; z-index:40; transform:translateY(130%);
+    transition:transform .2s ease; background:rgba(31,35,44,.98); backdrop-filter:blur(8px);
+    border-top:1px solid var(--line); padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; gap:10px}
+  .tray.on{transform:translateY(0)}
+  .tray #trayCount{font-weight:700; font-size:14px; flex:1}
+  .tray button{height:42px; border:0; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; padding:0 16px; flex:0 0 auto}
+  .tray #trayClear{background:transparent; color:var(--mute); border:1px solid var(--line)}
+  .tray #trayShow{background:#2f8fe0; color:#fff}
+
+  .bnav{display:flex; gap:10px; margin-top:14px}
+  .bnav button{flex:1; height:46px; border:1px solid var(--line); border-radius:12px;
+    background:#f1f3f6; color:#11141a; font-size:15px; font-weight:700; cursor:pointer}
+  .bnav button:disabled{opacity:.35}
+
+  /* modal */
+  .modal{position:fixed; inset:0; z-index:50; background:rgba(8,10,14,.92); display:none;
+    align-items:center; justify-content:center; padding:20px}
+  .modal.on{display:flex}
+  .sheet{background:#fff; color:#11141a; border-radius:18px; width:100%; max-width:520px; padding:20px 18px 18px; text-align:center}
+  .sheet .m-brand{font-size:12px; font-weight:800; letter-spacing:.06em}
+  .sheet .m-name{font-size:18px; font-weight:800; margin:6px 0 2px; line-height:1.3}
+  .sheet .m-sub{font-size:13px; color:#5a6270; margin-bottom:6px}
+  .sheet .m-warn{font-size:12.5px; color:#9a5b00; background:#fff3dc; border:1px solid #f0c674; border-radius:8px; padding:8px 10px; margin:0 auto 10px; line-height:1.5}
+  .sheet .m-qty{background:#2f8fe0; color:#fff; font-weight:800; font-size:17px; padding:8px 20px; border-radius:999px; margin:0 auto 12px}
+  .sheet .m-val{font-size:30px; font-weight:900; margin:2px 0 14px; letter-spacing:-.02em}
+  .sheet .m-barcode{background:#fff; padding:6px}
+  .sheet .m-barcode svg{width:100%; height:120px}
+  .sheet .m-code{font-size:15px; letter-spacing:.08em; font-weight:700; margin-top:4px}
+  .sheet .m-hint{font-size:12px; color:#8a93a1; margin-top:12px; line-height:1.5}
+  .sheet .m-close{margin-top:16px; width:100%; height:46px; border:0; border-radius:12px;
+    background:#11141a; color:#fff; font-size:15px; font-weight:700; cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <div class="logo">JAN BOOK<small>2026.06</small></div>
+    <div class="period">付与額スキャン用</div>
+  </div>
+  <div class="search-wrap">
+    <input id="q" class="search" type="search" inputmode="search" placeholder="名称・金額・JANコードで検索（例: 16500 / カウント / 17e）">
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+
+<div class="notice">
+  <b>誤計上注意</b> ／ YM SIMは<b>値引きとポイントの併用不可</b>。おうち割は<b>6/12〜の新JAN</b>のみ掲載（旧JANは使用しないでください）。SIM単体施策は「キャンペーン別紙 兼 受領書」のお渡しが必須です。
+</div>
+
+<details class="ref" id="refTaisho">
+  <summary>📋 家電値引き 対象商品一覧（タップで開閉）</summary>
+  <div class="ref-body" id="refBody"></div>
+</details>
+
+<main id="list"></main>
+
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="sheet" id="sheet" onclick="event.stopPropagation()">
+    <div class="m-brand" id="mBrand"></div>
+    <div class="m-name" id="mName"></div>
+    <div class="m-sub" id="mSub"></div>
+    <div class="m-warn" id="mWarn" style="display:none"></div>
+    <div class="m-val" id="mVal"></div>
+    <div class="m-barcode"><svg id="mSvg"></svg></div>
+    <div class="m-code tnum" id="mCode"></div>
+    <div class="m-hint">画面の明るさを最大にしてスキャンしてください</div>
+    <button class="m-close" onclick="closeModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="tray" id="tray">
+  <span id="trayCount">0件 選択中</span>
+  <button id="trayClear">クリア</button>
+  <button id="trayShow">まとめてスキャン</button>
+</div>
+
+<div class="modal" id="bmodal" onclick="closeBatch(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="m-brand" id="bIndex"></div>
+    <div class="m-name" id="bName"></div>
+    <div class="m-sub" id="bSub"></div>
+    <div class="m-val" id="bVal"></div>
+    <div class="m-qty" id="bQty" style="display:none"></div>
+    <div class="m-barcode"><svg id="bSvg"></svg></div>
+    <div class="m-code tnum" id="bCode"></div>
+    <div class="m-hint">スキャンしたら「次へ」／左右スワイプでも送れます</div>
+    <div class="bnav">
+      <button id="bPrev">‹ 前へ</button>
+      <button id="bNext">次へ ›</button>
+    </div>
+    <button class="m-close" onclick="closeBatch()">閉じる</button>
+  </div>
+</div>
+
+<script>
+// ===== データ =====
+// brand: ym / sb / kaden ｜ kind: disc / point / count ｜ group: フィルタ用
+var DATA = [
+  // --- Y!mobile 値引き ---
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 3,300",code:"2973846084467",val:"3,300",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 5,000",code:"2973846084511",val:"5,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 6,600",code:"2973846084481",val:"6,600",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 10,000",code:"2973845090162",val:"10,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 11,000",code:"2973846087901",val:"11,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 16,500",code:"2973846157963",val:"16,500",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 18,000",code:"2973846091212",val:"18,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 20,000",code:"2973846085938",val:"20,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 21,600",code:"2973846084528",val:"21,600",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 22,000",code:"2973846085150",val:"22,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 33,000",code:"2973846085624",val:"33,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 44,000",code:"2973845090100",val:"44,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM 値引き",name:"YM ﾈﾋﾞｷ 55,000",code:"2973890087292",val:"55,000",unit:"円"},
+  // --- Y!mobile ポイント付与（高い順） ---
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 40,000Pt",code:"2000274685024",val:"40,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 30,000Pt",code:"2000274684027",val:"30,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 20,000Pt",code:"2000274683020",val:"20,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 10,000Pt",code:"2000274682023",val:"10,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 5,000Pt",code:"2000274681026",val:"5,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 4,000Pt",code:"2000274680029",val:"4,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 3,000Pt",code:"2000274679023",val:"3,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 2,000Pt",code:"2000274678026",val:"2,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 1,000Pt",code:"2000274677029",val:"1,000",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 500Pt",code:"2000332940027",val:"500",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 400Pt",code:"2000333824029",val:"400",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 300Pt",code:"2000333823022",val:"300",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 200Pt",code:"2000333822025",val:"200",unit:"P"},
+  {brand:"ym",kind:"point",group:"YM ポイント",name:"YM ﾎﾟｲﾝﾄ販促(ﾓﾊﾞｲﾙ) 100Pt",code:"2000333821028",val:"100",unit:"P"},
+  // --- Y!mobile カウントJAN ---
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM ｽﾏﾎ MNP契約",sub:"スマホ_MNP（他社MNP）",code:"2000304201026"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM ｽﾏﾎ SBMNP契約",sub:"スマホ_番号移行（SB→YM）",code:"2000304202023"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM ｽﾏﾎ 新規契約",sub:"スマホ_純新規",code:"2000304203020"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM ｽﾏﾎ 機種変更契約",sub:"スマホ_機種変更",code:"2000304204027"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM SIM単体 MNP契約",sub:"SIM単体_MNP（他社MNP）",code:"2000304205024"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM SIM単体 SBMNP契約",sub:"SIM単体_番号移行（SB→YM）",code:"2000304206021"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM SIM単体 新規契約",sub:"SIM単体_純新規",code:"2000304207028"},
+  {brand:"ym",kind:"count",group:"YM カウント",name:"YM その他新規契約",sub:"ルーター/タブレット等",code:"2000304208025"},
+  // --- Y!mobile おうち割 ---
+  {brand:"ym",kind:"count",group:"YM おうち割",name:"Y!mobile おうち割カウント",sub:"光セット",code:"2000378208020"},
+  {brand:"ym",kind:"point",group:"YM おうち割",name:"Y!mobile おうち割加入ﾎﾟｲﾝﾄ 5,000pt",sub:"光セット／複数回読込可",code:"2000391445020",val:"5,000",unit:"P"},
+  {brand:"ym",kind:"disc",group:"YM おうち割",name:"Y!mobile おうち割加入値引き 10,000円",sub:"光セット",code:"2000391439029",val:"10,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM おうち割",name:"Y!mobile おうち割加入値引き 15,000円",sub:"光セット",code:"2000391440025",val:"15,000",unit:"円"},
+  {brand:"ym",kind:"point",group:"YM おうち割",name:"Y!mobile おうち割(でんき)加入ﾎﾟｲﾝﾄ 5,000pt",sub:"でんきセット／複数回読込可",code:"2000502481022",val:"5,000",unit:"P"},
+  {brand:"ym",kind:"disc",group:"YM おうち割",name:"Y!mobile おうち割(でんき)加入値引き 10,000円",sub:"でんきセット",code:"2000502479029",val:"10,000",unit:"円"},
+  {brand:"ym",kind:"disc",group:"YM おうち割",name:"Y!mobile おうち割光 加入値引き 5,000円",sub:"光セット（台紙より追記）",code:"2000391438022",val:"5,000",unit:"円",warn:"名称は連番から推定。正式名称が異なる場合あり"},
+  // --- Y!mobile リユース（コジマ限定） ---
+  {brand:"ym",kind:"count",group:"YM リユース",name:"YM リユース施策（中古スマホ）",sub:"CPコード 7130／コジマ限定・最大22,000円値引",code:"2000526886025"},
+  // --- SoftBank おうち割（ポイント還元は6/12〜新JAN／カウント・値引きJANは継続使用） ---
+  {brand:"sb",kind:"count",group:"SB おうち割",name:"SoftBank おうち割カウント",sub:"光セット／継続使用",code:"2000486389024"},
+  {brand:"sb",kind:"disc",group:"SB おうち割",name:"SoftBank おうち割加入値引き 10,000円",sub:"光セット／継続使用",code:"2000432905025",val:"10,000",unit:"円"},
+  {brand:"sb",kind:"disc",group:"SB おうち割",name:"SoftBank おうち割加入値引き 15,000円",sub:"光セット／継続使用",code:"2000432906022",val:"15,000",unit:"円"},
+  {brand:"sb",kind:"disc",group:"SB おうち割",name:"SoftBank おうち割(でんき)加入値引き 5,000円",sub:"でんきセット／継続使用",code:"2000432904028",val:"5,000",unit:"円"},
+  {brand:"sb",kind:"point",group:"SB おうち割",name:"SB おうち割光セット 加入ﾎﾟｲﾝﾄ 6,000pt",sub:"6/12〜 新JAN",code:"2000583167020",val:"6,000",unit:"P"},
+  {brand:"sb",kind:"point",group:"SB おうち割",name:"SB おうち割光セット 加入ﾎﾟｲﾝﾄ 11,000pt",sub:"6/12〜 新JAN",code:"2000583168027",val:"11,000",unit:"P"},
+  {brand:"sb",kind:"point",group:"SB おうち割",name:"SB おうち割光セット 加入ﾎﾟｲﾝﾄ 15,000pt",sub:"6/12〜 新JAN",code:"2000583169024",val:"15,000",unit:"P"},
+  {brand:"sb",kind:"point",group:"SB おうち割",name:"SB おうち割でんきセット 加入ﾎﾟｲﾝﾄ 5,000pt",sub:"6/12〜 新JAN",code:"2000583170020",val:"5,000",unit:"P"},
+  // --- SoftBank SIM単体施策 ---
+  {brand:"sb",kind:"count",group:"SB SIM単体",name:"SOFTBANK SIMのみ契約 カウント",sub:"全契約区分対象",code:"2000296081026"},
+  {brand:"sb",kind:"point",group:"SB SIM単体",name:"SB SIM ﾎﾟｲﾝﾄ還元 15,000pt",sub:"MNP／U18純新規",code:"2000515023028",val:"15,000",unit:"P"},
+  {brand:"sb",kind:"point",group:"SB SIM単体",name:"SB SIM ﾎﾟｲﾝﾄ還元 10,000pt",sub:"番号移行",code:"2000515767021",val:"10,000",unit:"P"},
+  // --- SoftBank ノートン ---
+  {brand:"sb",kind:"point",group:"SB ノートン",name:"SB ﾉｰﾄﾝ同時加入特典 3,000pt",sub:"SBG対象商材＋ノートン(月額)",code:"2000444591025",val:"3,000",unit:"P"},
+  // --- 固定・家電 カウントJAN ---
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（ライフ）",sub:"獲得コーナーの専用カウント",code:"2000513025024"},
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（情報）",sub:"獲得コーナーの専用カウント",code:"2000513026021"},
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（SA）",sub:"獲得コーナーの専用カウント",code:"2000513027028"},
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（CAW）",sub:"獲得コーナーの専用カウント",code:"2000513028025"},
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（SLEEP）",sub:"獲得コーナーの専用カウント",code:"2000513029022"},
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（エンタ）",sub:"獲得コーナーの専用カウント",code:"2000513030028"},
+  {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（スポーツ）",sub:"獲得コーナーの専用カウント",code:"2000513031025"},
+  // --- 固定・家電 値引きJAN ---
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 27,000円値引",sub:"① ベースJANと組合せ",code:"2000463377020",val:"27,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 17,000円値引",sub:"② ベースJANと組合せ",code:"2000463376023",val:"17,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 7,000円値引",sub:"③ ベースJANと組合せ",code:"2000463375026",val:"7,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 2,000円値引",sub:"④ ベースJANと組合せ",code:"2000463374029",val:"2,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 ベース 33,000円値引",sub:"ベースJAN",code:"2000463372025",val:"33,000",unit:"円",warn:"SoftBank Air 最大60,500円 = 33,000＋27,000＋500 の組合せ"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 10,000円値引",sub:"組合せ用",code:"2000463383021",val:"10,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 500円値引",sub:"調整用",code:"2000561372026",val:"500",unit:"円"},
+  // --- SoftBank ブロードバンド（BB JAN一覧） ---
+  {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"SoftBank光 おうち割あり 新規",sub:"BB JAN一覧",code:"2099532412014"},
+  {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"SoftBank光 おうち割なし 新規",sub:"BB JAN一覧",code:"2099532415015"},
+  {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"SoftBank Air 購入",sub:"BB JAN一覧",code:"2000164707027"},
+  {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"SoftBank Air レンタル",sub:"BB JAN一覧",code:"2000164708024"},
+  {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"無線LANパック",sub:"BB JAN一覧",code:"2099531324011"},
+  {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"SB カウント（BB獲得JAN＋専用JAN）",sub:"JANコード名称：ソフトバンクSS",code:"2000379281022"},
+  // --- パナソニック ポイント ---
+  {brand:"kaden",kind:"count",group:"パナソニック ポイント",name:"パナ商品 購入JAN",sub:"購入カウント",code:"2000313627022"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 40,000",code:"2000314126029",val:"40,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 30,000",code:"2000313483024",val:"30,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 20,000",code:"2000313482027",val:"20,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 10,000",code:"2000313481020",val:"10,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 5,000",code:"2000313480023",val:"5,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 4,000",code:"2000313479027",val:"4,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 3,000",code:"2000313478020",val:"3,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 2,000",code:"2000313477023",val:"2,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 1,000",code:"2000313476026",val:"1,000",unit:"P"},
+  {brand:"kaden",kind:"point",group:"パナソニック ポイント",name:"パナソニックポイント 500",code:"2000561373023",val:"500",unit:"P"},
+  // --- 電気・ガス ---
+  {brand:"kaden",kind:"count",group:"電気・ガス",name:"おうちでんき カウントJAN",sub:"おうちでんき/おうち割 家電セット",code:"2000299200028"},
+  {brand:"kaden",kind:"disc",group:"電気・ガス",name:"おうちでんき 5,500円値引き",sub:"おうちでんき＋関西エリア／当日値引",code:"2000300349029",val:"5,500",unit:"円"},
+  {brand:"kaden",kind:"point",group:"電気・ガス",name:"おうちでんき 5,000ポイント還元",sub:"九州・東北限定／開通後還元",code:"2000435173025",val:"5,000",unit:"P"},
+  {brand:"kaden",kind:"disc",group:"電気・ガス",name:"ソフトバンクガス 5,500円値引き",sub:"東京・関西／施策コード KADEN",code:"2000494318023",val:"5,500",unit:"円"},
+  {brand:"kaden",kind:"point",group:"電気・ガス",name:"ソフトバンクガス 5,500Pt還元",sub:"パナ/日立 値引不可商品はPt還元",code:"2000494317026",val:"5,500",unit:"P"}
+];
+
+var KIND_LABEL = {disc:"値引き", point:"ポイント", count:"カウント"};
+var BRAND_LABEL = {ym:"Y!mobile", sb:"SoftBank", kaden:"家電/固定"};
+var GROUP_ORDER = [
+  "YM カウント","YM ポイント","YM おうち割",
+  "SB おうち割","SB SIM単体","SB ブロードバンド",
+  "家電 カウント","家電 値引き","パナソニック ポイント","電気・ガス",
+  "SB ノートン","YM 値引き","YM リユース"  // ほぼ使わないため右端へ
+];
+var GROUPS = [];
+GROUP_ORDER.forEach(function(g){
+  if(GROUPS.indexOf(g)<0 && DATA.some(function(d){ return d.group===g; })) GROUPS.push(g);
+});
+DATA.forEach(function(d){ if(GROUPS.indexOf(d.group)<0) GROUPS.push(d.group); });
+
+// ===== フィルタ状態 =====
+var state = {chip:"すべて", q:""};
+var SELECTED = []; // [{code, qty}] 選択順を保持
+
+// ===== チップ生成 =====
+var chipsEl = document.getElementById("chips");
+["すべて"].concat(GROUPS).forEach(function(g){
+  var c = document.createElement("button");
+  c.className = "chip" + (g==="すべて"?" on":"");
+  c.textContent = g;
+  c.onclick = function(){
+    state.chip = g;
+    [].forEach.call(chipsEl.children, function(x){ x.classList.remove("on"); });
+    c.classList.add("on");
+    render();
+  };
+  chipsEl.appendChild(c);
+});
+
+// ===== 検索 =====
+document.getElementById("q").addEventListener("input", function(e){
+  state.q = e.target.value.trim().toLowerCase();
+  render();
+});
+
+// ===== 描画 =====
+var listEl = document.getElementById("list");
+
+function match(d){
+  if(state.chip!=="すべて" && d.group!==state.chip) return false;
+  if(state.q){
+    var hay = (d.name+" "+(d.sub||"")+" "+(d.val||"")+" "+d.code+" "+BRAND_LABEL[d.brand]+" "+KIND_LABEL[d.kind]).toLowerCase();
+    if(hay.indexOf(state.q)<0) return false;
+  }
+  return true;
+}
+
+function render(){
+  listEl.innerHTML = "";
+  var shown = DATA.filter(match);
+  if(shown.length===0){
+    listEl.innerHTML = '<div class="empty">該当するJANがありません。<br>検索ワードを変えてみてください。</div>';
+    return;
+  }
+  GROUPS.forEach(function(g){
+    var items = shown.filter(function(d){ return d.group===g; });
+    if(items.length===0) return;
+    var t = document.createElement("div");
+    t.className = "group-title";
+    t.textContent = g + "（" + items.length + "）";
+    listEl.appendChild(t);
+    var grid = document.createElement("div");
+    grid.className = "grid";
+    items.forEach(function(d){ grid.appendChild(buildCard(d)); });
+    listEl.appendChild(grid);
+  });
+  // バーコード描画
+  [].forEach.call(document.querySelectorAll("svg[data-code]"), function(svg){
+    try{
+      JsBarcode(svg, svg.getAttribute("data-code"), {format:"EAN13", displayValue:false, margin:0, height:54, width:1.6});
+    }catch(err){ svg.parentNode.innerHTML = '<div class="code">'+svg.getAttribute("data-code")+'</div>'; }
+  });
+  updateTray();
+}
+
+function buildCard(d){
+  var card = document.createElement("div");
+  card.className = "card " + d.brand + (isSelected(d.code)?" selected":"");
+  var valHTML = "";
+  if(d.kind==="count"){
+    valHTML = '<div class="value count">識別 / カウント用</div>';
+  }else{
+    var cls = d.kind==="disc" ? "disc" : "point";
+    valHTML = '<div class="value '+cls+'"><span class="num tnum">'+d.val+'</span><span class="unit">'+d.unit+'</span></div>';
+  }
+  card.innerHTML =
+    '<div class="bar"></div>' +
+    '<div class="card-head">' +
+      '<span class="brandtag">'+BRAND_LABEL[d.brand]+'</span>' +
+      '<span class="kindtag">'+KIND_LABEL[d.kind]+'</span>' +
+    '</div>' +
+    '<div class="name">'+d.name+'</div>' +
+    (d.sub?'<div class="sub">'+d.sub+'</div>':'') +
+    valHTML +
+    (d.warn?'<div class="warnflag">⚠ '+d.warn+'</div>':'') +
+    '<div class="barcode"><svg data-code="'+d.code+'"></svg><div class="code tnum">'+d.code+'</div></div>' +
+    '<div class="selrow"></div>';
+  card.onclick = function(){ openModal(d); };
+  renderSelRow(card, d);
+  return card;
+}
+
+// ===== 選択・数量・まとめてスキャン =====
+function selIndex(code){ for(var i=0;i<SELECTED.length;i++){ if(SELECTED[i].code===code) return i; } return -1; }
+function getQty(code){ var i=selIndex(code); return i>=0 ? SELECTED[i].qty : 0; }
+function setQty(code, q){
+  var i = selIndex(code);
+  if(q<=0){ if(i>=0) SELECTED.splice(i,1); }
+  else { if(i>=0) SELECTED[i].qty = q; else SELECTED.push({code:code, qty:q}); }
+}
+function isSelected(code){ return getQty(code) > 0; }
+
+function renderSelRow(card, d){
+  var sel = card.querySelector(".selrow");
+  var q = getQty(d.code);
+  card.classList.toggle("selected", q>0);
+  sel.innerHTML = "";
+  if(q<=0){
+    var b = document.createElement("button");
+    b.className = "selbtn"; b.textContent = "＋ 選択";
+    b.onclick = function(e){ e.stopPropagation(); setQty(d.code,1); renderSelRow(card,d); updateTray(); };
+    sel.appendChild(b);
+  }else{
+    var w = document.createElement("div"); w.className = "stepper";
+    var m = document.createElement("button"); m.textContent = "−"; m.setAttribute("aria-label","減らす");
+    m.onclick = function(e){ e.stopPropagation(); setQty(d.code,q-1); renderSelRow(card,d); updateTray(); };
+    var n = document.createElement("span"); n.className = "qn"; n.textContent = "×"+q+" 回";
+    var p = document.createElement("button"); p.textContent = "＋"; p.setAttribute("aria-label","増やす");
+    p.onclick = function(e){ e.stopPropagation(); setQty(d.code,q+1); renderSelRow(card,d); updateTray(); };
+    w.appendChild(m); w.appendChild(n); w.appendChild(p);
+    sel.appendChild(w);
+  }
+}
+function updateTray(){
+  var tray = document.getElementById("tray");
+  if(SELECTED.length>0){
+    var total = 0; SELECTED.forEach(function(s){ total += s.qty; });
+    tray.classList.add("on");
+    document.getElementById("trayCount").textContent = SELECTED.length + "種 / 合計 " + total + "回";
+  }else{
+    tray.classList.remove("on");
+  }
+}
+function findByCode(code){
+  for(var i=0;i<DATA.length;i++){ if(DATA[i].code===code) return DATA[i]; }
+  return null;
+}
+var BATCH = [], bIndex = 0;
+function openBatch(){
+  BATCH = SELECTED.map(function(s){ return {d:findByCode(s.code), qty:s.qty}; })
+                  .filter(function(x){ return x.d; });
+  if(BATCH.length===0) return;
+  bIndex = 0; showBatch();
+  document.getElementById("bmodal").classList.add("on");
+}
+function showBatch(){
+  var item = BATCH[bIndex];
+  var d = item.d;
+  document.getElementById("bIndex").textContent = (bIndex+1) + " / " + BATCH.length + "　" + BRAND_LABEL[d.brand] + "・" + KIND_LABEL[d.kind];
+  document.getElementById("bName").textContent = d.name;
+  document.getElementById("bSub").textContent = d.sub || "";
+  var bVal = document.getElementById("bVal");
+  if(d.kind==="count"){ bVal.textContent="識別 / カウント用"; bVal.style.fontSize="16px"; bVal.style.color="#5a6270"; }
+  else { bVal.textContent = d.val + (d.unit==="円"?"円":"P"); bVal.style.fontSize="30px"; bVal.style.color="#11141a"; }
+  var bQty = document.getElementById("bQty");
+  if(item.qty>1){ bQty.style.display="inline-block"; bQty.textContent="×"+item.qty; }
+  else { bQty.style.display="none"; }
+  document.getElementById("bCode").textContent = d.code;
+  var s = document.getElementById("bSvg"); s.innerHTML = "";
+  try{ JsBarcode(s, d.code, {format:"EAN13", displayValue:false, margin:6, height:120, width:2.4}); }catch(e){}
+  document.getElementById("bPrev").disabled = bIndex===0;
+  document.getElementById("bNext").disabled = bIndex===BATCH.length-1;
+}
+function closeBatch(e){
+  if(e && e.target && e.target.id!=="bmodal") return;
+  document.getElementById("bmodal").classList.remove("on");
+}
+document.getElementById("bPrev").onclick = function(){ if(bIndex>0){ bIndex--; showBatch(); } };
+document.getElementById("bNext").onclick = function(){ if(bIndex<BATCH.length-1){ bIndex++; showBatch(); } };
+document.getElementById("trayClear").onclick = function(){ SELECTED = []; updateTray(); render(); };
+document.getElementById("trayShow").onclick = openBatch;
+
+// まとめてスキャン：左右スワイプで前後送り
+(function(){
+  var sheet = document.querySelector("#bmodal .sheet");
+  var sx = 0, sy = 0;
+  sheet.addEventListener("touchstart", function(e){ sx=e.changedTouches[0].clientX; sy=e.changedTouches[0].clientY; }, {passive:true});
+  sheet.addEventListener("touchend", function(e){
+    var dx = e.changedTouches[0].clientX - sx;
+    var dy = e.changedTouches[0].clientY - sy;
+    if(Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)){
+      if(dx < 0 && bIndex < BATCH.length-1){ bIndex++; showBatch(); }
+      else if(dx > 0 && bIndex > 0){ bIndex--; showBatch(); }
+    }
+  }, {passive:true});
+})();
+
+// ===== モーダル拡大 =====
+function openModal(d){
+  document.getElementById("mBrand").textContent = BRAND_LABEL[d.brand] + " ・ " + KIND_LABEL[d.kind];
+  document.getElementById("mBrand").style.color =
+    d.brand==="ym" ? "#e60012" : (d.brand==="sb" ? "#5b6573" : "#1f9e8c");
+  document.getElementById("mName").textContent = d.name;
+  document.getElementById("mSub").textContent = d.sub || "";
+  var mWarn = document.getElementById("mWarn");
+  if(d.warn){ mWarn.style.display="block"; mWarn.textContent="⚠ "+d.warn; } else { mWarn.style.display="none"; }
+  var mVal = document.getElementById("mVal");
+  if(d.kind==="count"){ mVal.textContent = "識別 / カウント用"; mVal.style.color="#5a6270"; mVal.style.fontSize="16px"; }
+  else { mVal.textContent = d.val + (d.unit==="円"?"円":"P"); mVal.style.color="#11141a"; mVal.style.fontSize="30px"; }
+  document.getElementById("mCode").textContent = d.code;
+  var mSvg = document.getElementById("mSvg");
+  mSvg.innerHTML = "";
+  try{ JsBarcode(mSvg, d.code, {format:"EAN13", displayValue:false, margin:6, height:120, width:2.4}); }catch(e){}
+  document.getElementById("modal").classList.add("on");
+}
+function closeModal(e){
+  if(e && e.target && e.target.id!=="modal" && e.type!=="click") return;
+  document.getElementById("modal").classList.remove("on");
+}
+
+// ===== 家電値引き 対象商品一覧 =====
+var TAISHO = [
+ ["AV家電",[
+   ["テレビ・レコーダー・チューナー",1,""],
+   ["オーディオ・Bluetoothイヤホン/ヘッドホン",1,"AirPods除く"],
+   ["記録メディア・ケーブル・リモコン等",0,""],
+   ["イヤホン・ヘッドホン（Bluetooth除く）",0,""],
+   ["楽器",0,""]
+ ]],
+ ["情報家電",[
+   ["パソコン・タブレット（WiFiモデル）・プリンター",1,"Mac含む・iPad除く"],
+   ["スマートウォッチ（WiFi/GPSモデル）",1,"AppleWatch含む"],
+   ["ゲーム機本体",1,""],
+   ["タブレット（Cellularモデル）",0,""],
+   ["スマートウォッチ（Cellularモデル）",0,""],
+   ["PCソフト・ゲームソフト・映画/音楽ソフト",0,""],
+   ["コピー用紙・インク・メモリ・電卓・電子辞書・翻訳機等",0,""]
+ ]],
+ ["通信家電",[
+   ["電話機・FAX本体",1,""],
+   ["携帯電話・スマートフォン（SIMフリー端末含む）",0,""],
+   ["携帯/スマホアクセサリ（ケース・フィルム・バッテリー・ケーブル等）",0,""]
+ ]],
+ ["カメラ類",[
+   ["カメラ・ビデオカメラ",1,""],
+   ["カメラアクセサリー・双眼鏡等",0,""]
+ ]],
+ ["生活家電",[
+   ["洗濯機・乾燥機・掃除機",1,""],
+   ["冷蔵庫・電子レンジ・炊飯器・その他調理家電",1,""],
+   ["理美容家電・健康家電",1,""],
+   ["エアコン・空気清浄機・加湿器/除湿器・冷暖房・その他空調家電",1,""],
+   ["浄水器/カートリッジ・歩数計・体温計等",0,""]
+ ]],
+ ["その他",[
+   ["照明器具・給湯器",1,""],
+   ["電動自転車",1,""],
+   ["電池・電球",0,""],
+   ["腕時計・掛/置時計・タイマー",0,""],
+   ["家具・インテリア雑貨",0,""],
+   ["おもちゃ・ホビー",0,""],
+   ["食料品・ドリンク・日用品・雑貨品・医薬品・文房具・嗜好品等",0,""],
+   ["工具・DIY・スポーツ用品・アウトドア用品・カー用品",0,""]
+ ]]
+];
+function buildTaisho(){
+  var b = document.getElementById("refBody");
+  if(!b) return;
+  var html = "";
+  TAISHO.forEach(function(g){
+    html += '<div class="ref-cat">'+g[0]+'</div>';
+    g[1].forEach(function(it){
+      var ok = it[1]===1;
+      html += '<div class="ref-item'+(ok?'':' no')+'">'+
+        '<span class="'+(ok?'ref-ok':'ref-ng')+'">'+(ok?'○':'×')+'</span>'+
+        '<span class="ref-name">'+it[0]+(it[2]?'<span class="ref-note">'+it[2]+'</span>':'')+'</span></div>';
+    });
+  });
+  b.innerHTML = html;
+}
+buildTaisho();
+
+render();
+</script>
+</body>
+</html>

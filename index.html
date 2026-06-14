@@ -84,6 +84,10 @@
   .card.sb .brandtag{background:rgba(120,140,170,.18); color:#aebacb}
   .card.kaden .brandtag{background:rgba(31,158,140,.16); color:#5fd8c6}
   .kindtag{font-size:10px; font-weight:700; color:var(--mute); margin-left:auto; padding:2px 6px; border:1px solid var(--line); border-radius:5px; white-space:nowrap}
+  .kindtag.k-count{background:rgba(255,176,46,.16); color:#ffb02e; border-color:rgba(255,176,46,.5)}
+  .kindtag.k-disc{background:rgba(230,0,18,.12); color:#ff7b84; border-color:rgba(230,0,18,.32)}
+  .kindtag.k-point{background:rgba(47,143,224,.14); color:#6fb6ee; border-color:rgba(47,143,224,.38)}
+  .card.kcount{background:#24221d}
   .name{padding:0 12px 0 16px; font-size:12.5px; font-weight:600; line-height:1.35; color:var(--ink); min-height:34px}
   .sub{padding:2px 12px 0 16px; font-size:11px; color:var(--mute); line-height:1.4}
   .value{padding:6px 12px 2px 16px; font-weight:800; letter-spacing:-.01em}
@@ -91,7 +95,7 @@
   .value .unit{font-size:12px; color:var(--mute); margin-left:2px}
   .value.disc .num{color:#ff7b84}
   .value.point .num{color:#6fb6ee}
-  .value.count{font-size:12px; color:var(--mute); font-weight:700; padding-top:8px}
+  .value.count{font-size:12px; color:#ffb02e; font-weight:800; padding-top:8px}
   .barcode{background:var(--paper); margin:10px 10px 12px; border-radius:8px; padding:8px 6px 4px; text-align:center}
   .barcode svg{width:100%; height:54px; display:block}
   .code{font-size:11px; color:#1a1d23; letter-spacing:.04em; padding-bottom:4px; font-weight:600}
@@ -280,13 +284,22 @@ var DATA = [
   {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（SLEEP）",sub:"獲得コーナーの専用カウント",code:"2000513029022"},
   {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（エンタ）",sub:"獲得コーナーの専用カウント",code:"2000513030028"},
   {brand:"kaden",kind:"count",group:"家電 カウント",name:"SB 指定家電ｶｳﾝﾄ（スポーツ）",sub:"獲得コーナーの専用カウント",code:"2000513031025"},
-  // --- 固定・家電 値引きJAN ---
+  // --- 固定・家電 値引きJAN（ベース先頭・以降金額降順／既存とKD30を併存） ---
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 ベース 33,000円値引",sub:"ベースJAN（KD30）",code:"2000463372025",val:"33,000",unit:"円",warn:"例: Air最大60,500円 = 33,000＋27,000＋500"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 ベース 22,000円値引",sub:"ベースJAN（KD20）",code:"2000463373022",val:"22,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 30,000円値引",sub:"光値引き KD30",code:"2973845084369",val:"30,000",unit:"円"},
   {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 27,000円値引",sub:"① ベースJANと組合せ",code:"2000463377020",val:"27,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 20,000円値引",sub:"光値引き KD30",code:"2973845084376",val:"20,000",unit:"円"},
   {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 17,000円値引",sub:"② ベースJANと組合せ",code:"2000463376023",val:"17,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 10,000円値引",sub:"光値引き KD30",code:"2973845084413",val:"10,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 10,000円値引",sub:"組合せ用（別系統）",code:"2000463383021",val:"10,000",unit:"円"},
   {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 7,000円値引",sub:"③ ベースJANと組合せ",code:"2000463375026",val:"7,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 5,000円値引",sub:"光値引き KD30",code:"2973845084406",val:"5,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 4,000円値引",sub:"光値引き KD30",code:"2973845084390",val:"4,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 3,000円値引",sub:"光値引き KD30",code:"2973845086493",val:"3,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 2,000円値引",sub:"光値引き KD30",code:"2973845084383",val:"2,000",unit:"円"},
   {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定商品(家電) 2,000円値引",sub:"④ ベースJANと組合せ",code:"2000463374029",val:"2,000",unit:"円"},
-  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 ベース 33,000円値引",sub:"ベースJAN",code:"2000463372025",val:"33,000",unit:"円",warn:"SoftBank Air 最大60,500円 = 33,000＋27,000＋500 の組合せ"},
-  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 10,000円値引",sub:"組合せ用",code:"2000463383021",val:"10,000",unit:"円"},
+  {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 1,000円値引",sub:"光値引き KD30",code:"2973845084338",val:"1,000",unit:"円"},
   {brand:"kaden",kind:"disc",group:"家電 値引き",name:"SB 指定家電 500円値引",sub:"調整用",code:"2000561372026",val:"500",unit:"円"},
   // --- SoftBank ブロードバンド（BB JAN一覧） ---
   {brand:"sb",kind:"count",group:"SB ブロードバンド",name:"SoftBank光 おうち割あり 新規",sub:"BB JAN一覧",code:"2099532412014"},
@@ -396,7 +409,7 @@ function render(){
 
 function buildCard(d){
   var card = document.createElement("div");
-  card.className = "card " + d.brand + (isSelected(d.code)?" selected":"");
+  card.className = "card " + d.brand + (d.kind==="count"?" kcount":"") + (isSelected(d.code)?" selected":"");
   var valHTML = "";
   if(d.kind==="count"){
     valHTML = '<div class="value count">識別 / カウント用</div>';
@@ -408,7 +421,7 @@ function buildCard(d){
     '<div class="bar"></div>' +
     '<div class="card-head">' +
       '<span class="brandtag">'+BRAND_LABEL[d.brand]+'</span>' +
-      '<span class="kindtag">'+KIND_LABEL[d.kind]+'</span>' +
+      '<span class="kindtag k-'+d.kind+'">'+KIND_LABEL[d.kind]+'</span>' +
     '</div>' +
     '<div class="name">'+d.name+'</div>' +
     (d.sub?'<div class="sub">'+d.sub+'</div>':'') +

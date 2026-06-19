@@ -261,6 +261,13 @@ var DATA = [
   {brand:"ym",kind:"disc",group:"YM おうち割",name:"Y!mobile おうち割光 加入値引き 5,000円",sub:"光セット（台紙より追記）",code:"2000391438022",val:"5,000",unit:"円",warn:"名称は連番から推定。正式名称が異なる場合あり"},
   // --- Y!mobile リユース（コジマ限定） ---
   {brand:"ym",kind:"count",group:"YM リユース",name:"YM リユース施策（中古スマホ）",sub:"CPコード 7130／コジマ限定・最大22,000円値引",code:"2000526886025"},
+  // --- SoftBank カウントJAN（契約区分別） ---
+  {brand:"sb",kind:"count",group:"SB カウント",name:"SB スマホ 新規",sub:"スマホ_純新規",code:"2000294241026"},
+  {brand:"sb",kind:"count",group:"SB カウント",name:"SB スマホ MNP",sub:"スマホ_他社MNP",code:"2000294242023"},
+  {brand:"sb",kind:"count",group:"SB カウント",name:"SB スマホ 機種変更",sub:"スマホ_機種変更",code:"2000294243020"},
+  {brand:"sb",kind:"count",group:"SB カウント",name:"SB その他 新規",sub:"ルーター/タブレット等",code:"2000294244027"},
+  {brand:"sb",kind:"count",group:"SB カウント",name:"SB SIM単体 YM→SB",sub:"SIM単体_番号移行（YM→SB）",code:"2000296082023"},
+  {brand:"sb",kind:"count",group:"SB カウント",name:"SB SIM単体 他社MNP",sub:"SIM単体_他社MNP",code:"2000288630027"},
   // --- SoftBank おうち割（ポイント還元は6/12〜新JAN／カウント・値引きJANは継続使用） ---
   {brand:"sb",kind:"count",group:"SB おうち割",name:"SoftBank おうち割カウント",sub:"光セット／継続使用",code:"2000486389024"},
   {brand:"sb",kind:"disc",group:"SB おうち割",name:"SoftBank おうち割加入値引き 10,000円",sub:"光セット／継続使用",code:"2000432905025",val:"10,000",unit:"円"},
@@ -332,7 +339,7 @@ var KIND_LABEL = {disc:"値引き", point:"ポイント", count:"カウント"};
 var BRAND_LABEL = {ym:"Y!mobile", sb:"SoftBank", kaden:"家電/固定"};
 var GROUP_ORDER = [
   "YM カウント","YM ポイント","YM おうち割",
-  "SB おうち割","SB SIM単体","SB ブロードバンド",
+  "SB カウント","SB おうち割","SB SIM単体","SB ブロードバンド",
   "家電 カウント","家電 値引き","パナソニック ポイント","電気・ガス",
   "SB ノートン","YM 値引き","YM リユース"  // ほぼ使わないため右端へ
 ];
